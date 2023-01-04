@@ -107,3 +107,21 @@ function publish_event($event_id, $state)
 {
     return query_db("UPDATE deplacements SET open=? WHERE did=? LIMIT 1", $state, $event_id);
 }
+
+function save_registration($event_id, $user_id, $get)
+{
+    if (isset($get['submit'])) {
+        if (isset($get['event_entry'])) {
+            if (isset($get['event_transport'])) {
+                #do the query for transport
+            }
+            if (isset($get['event_accomodation'])) {
+                #query for accomodation
+            }
+            if (strlen($get['event_comments']) != 0) {
+                return $get;
+            }
+        }
+
+    }
+}
