@@ -17,6 +17,7 @@ get('/evenements/$event_id', 'pages/events/event_view.php');
 any('/evenements/$event_id/inscription', 'pages/events/event_register.php');
 any('/evenements/$event_id/publier', 'pages/events/event_publish.php');
 any('/evenements/$event_id/supprimer', 'pages/events/event_delete.php');
+get('/download', 'uploads/download_file.php');
 
 // Settings
 any('/mon-profil', 'pages/settings/settings.php');

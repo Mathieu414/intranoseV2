@@ -107,3 +107,11 @@ function publish_event($event_id, $state)
 {
     return query_db("UPDATE deplacements SET open=? WHERE did=? LIMIT 1", $state, $event_id);
 }
+
+function get_file($id)
+{
+    return fetch_single(
+        "SELECT * from circulaires WHERE id = ?",
+        $id
+    );
+}

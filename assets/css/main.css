@@ -12,7 +12,7 @@
 /* Automatically enabled if user has Dark mode enabled */
 @media only screen and (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --primary: hsl(123, 78%, 48%);
+    --primary: hsl(123, 68%, 36%);
     --primary-hover: hsl(125, 82%, 52%);
     --primary-focus: hsla(123, 78%, 48%, 0.25);
     --primary-inverse: #fff;
@@ -22,7 +22,7 @@
 /* Pink Dark scheme (Forced) */
 /* Enabled if forced with data-theme="dark" */
 [data-theme="dark"] {
-  --primary: hsl(123, 78%, 48%);
+  --primary: hsl(123, 68%, 36%);
   --primary-hover: hsl(125, 82%, 52%);
   --primary-focus: hsla(123, 78%, 48%, 0.25);
   --primary-inverse: #fff;

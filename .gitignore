@@ -1,3 +1,5 @@
 /images/profile/*
 !/images/profile/none.jpg
 env.php
+/uploads/*
+!/uploads/*.php

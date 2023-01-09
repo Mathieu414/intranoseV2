@@ -37,6 +37,11 @@ header > .row > .col-sm-6 {
   }
 }
 
+.file-button {
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
 textarea {
   resize: none;
 }

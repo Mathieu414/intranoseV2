@@ -9,6 +9,7 @@ $competitions = get_competitions_by_event_id($event['did'], $_SESSION['user_id']
 $has_entry = isset($event['present']) && $event['present'] == 1;
 $is_transported = isset($event['transport']) && $event['transport'] == 1;
 $is_hosted = isset($event['heberg']) && $event['heberg'] == 1;
+$has_file = $event['circu'] != 0;
 
 page($event['nom'], "event_view.css");
 ?>
@@ -19,17 +20,17 @@ page($event['nom'], "event_view.css");
         <a href="/evenements/<?= $event['did'] ?>/inscription">
             <i class="fas fa-pen-to-square"></i> Inscription
         </a>
-        <?php elseif (!$event['open']): ?>
+    <?php elseif (!$event['open']): ?>
         <a href="/evenements/<?= $event['did'] ?>/publier">
             <i class="fas fa-paper-plane"></i> Publier
         </a>
-        <?php endif ?>
+    <?php endif ?>
 
     <?php if ($can_edit): ?>
         <a href="/evenements/<?= $event['did'] ?>/modifier" class="secondary">
             <i class="fas fa-pen"></i> Modifier
         </a>
-        <?php endif ?>
+    <?php endif ?>
 </div>
 <article>
     <header class="center">
@@ -52,15 +53,28 @@ page($event['nom'], "event_view.css");
             </div>
         </div>
 
+        <?php if ($has_file): ?>
+            <div class="file-button">
+                <a href="/download?id=<?= $event["circu"] ?>" role="button">
+                    <div>
+                        <i class="fas fa-paperclip"></i>
+                    </div>
+                    <div>
+                        <b>Informations</b>
+                    </div>
+                </a>
+            </div>
+        <?php endif ?>
+
         <div>
             <b>
                 <?php if (isset($event['present']) && $event['present'] == 1): ?>
                     <ins><i class="fas fa-check"></i>
                         <span>Je participe</span></ins>
-                    <?php else: ?>
+                <?php else: ?>
                     <del><i class="fas fa-xmark"></i>
                         <span><?= isset($event['present']) ? "Je ne participe pas" : "Pas inscrit" ?></span></del>
-                    <?php endif; ?>
+                <?php endif; ?>
             </b>
         </div>
     </header>
@@ -69,20 +83,20 @@ page($event['nom'], "event_view.css");
             <p>
                 <?php if ($is_transported): ?>
                     <ins><i class="fas fa-check"></i></ins>
-                    <?php else: ?>
+                <?php else: ?>
                     <del><i class="fas fa-xmark"></i></del>
-                    <?php endif; ?>
+                <?php endif; ?>
                 <span>Transport avec le club</span>
             </p>
             <p>
                 <?php if ($is_hosted): ?>
                     <ins><i class="fas fa-check"></i></ins>
-                    <?php else: ?>
+                <?php else: ?>
                     <del><i class="fas fa-xmark"></i></del>
-                    <?php endif; ?>
+                <?php endif; ?>
                 <span>Hébergement avec le club</span>
             </p>
-            <?php endif; ?>
+        <?php endif; ?>
     </div>
 
 
@@ -95,9 +109,9 @@ page($event['nom'], "event_view.css");
                     <td class="competition-entry">
                         <?php if (isset($competition['present']) && $competition['present'] == 1): ?>
                             <ins><i class="fas fa-check"></i></ins>
-                            <?php else: ?>
+                        <?php else: ?>
                             <del><i class="fas fa-xmark"></i></del>
-                            <?php endif; ?>
+                        <?php endif; ?>
                     </td>
                     <td class="competition-name"><b><?= $competition['nom'] ?></b></td>
                     <td class="competition-date">
@@ -105,14 +119,14 @@ page($event['nom'], "event_view.css");
                     </td>
                     <td class="competition-place"><?= $competition['lieu'] ?></td>
                 </tr>
-                <?php endforeach ?>
+            <?php endforeach ?>
         </table>
-        <?php endif ?>
+    <?php endif ?>
 
     <?php if ($can_edit): ?>
         <p>
             <a role=button class="secondary" href="/evenements/<?= $event['did'] ?>/ajouter-course">
                 <i class="fas fa-plus"></i> Ajouter une course</a>
         </p>
-        <?php endif; ?>
+    <?php endif; ?>
 </article>
