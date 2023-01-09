@@ -1,13 +1,25 @@
 <?php
 restrict_access();
 
+$id = $_SESSION['user_id'];
+
 require_once "database/events.api.php";
+$event = get_event_by_id(get_route_param('event_id'), $_SESSION['user_id']);
+$competitions = get_competitions_by_event_id($event['did'], $_SESSION['user_id']);
+
+$competitions_id = [];
+foreach ($competitions as $competition) {
+    $competitions_id[] = $competition['cid'];
+}
+
+save_registration($event['did'], $id, $_POST, $competitions_id);
+
 $event = get_event_by_id(get_route_param('event_id'), $_SESSION['user_id']);
 $competitions = get_competitions_by_event_id($event['did'], $_SESSION['user_id']);
 
 page("Inscription - " . $event['nom'], "event_view.css");
 ?>
-<form id="eventForm" method="get">
+<form id="eventForm" method="post">
     <div class="page-actions">
         <a href="/evenements/<?= $event['did'] ?>" class="secondary"><i class="fas fa-caret-left"></i> Retour</a>
     </div>
@@ -25,7 +37,9 @@ page("Inscription - " . $event['nom'], "event_view.css");
                 </div>
                 <div>
                     <i class="fas fa-clock"></i>
-                    <span><?="Date limite - " . format_date($event['limite']) ?></span>
+                    <span>
+                        <?="Date limite - " . format_date($event['limite']) ?>
+                    </span>
                 </div>
             </div>
 
@@ -59,38 +73,44 @@ page("Inscription - " . $event['nom'], "event_view.css");
                 <label for="entryComments">
                     Remarques:
                 </label>
-                <textarea name="event_comments"></textarea>
+                <textarea name="event_comments"><?= $event['comment'] ?></textarea>
             </fieldset>
 
             <?php if (count($competitions)): ?>
-            <h4>Courses : </h4>
-            <table role="grid">
-                <?php foreach ($competitions as $competition): ?>
-                <tr class="display">
-                    <td class="competition-name"><b><?= $competition['nom'] ?></b></td>
-                    <td class="competition-date"><?= format_date($competition['date']) ?></td>
-                    <td class="competition-place"><?= $competition['lieu'] ?></td>
-                </tr>
-                <tr class="edit">
-                    <td colspan="4">
-                        <fieldset class="row">
-                            <label for="competitionSwitch">
-                                <input type="checkbox" name="event_entry" id="competitionSwitch" class="entry-switch"
-                                    role="switch" onchange="displayForm()" <?= $competition['present'] ? "checked" : "" ?>>
-                                <ins>Je cours <i class="fas fa-check"></i></ins>
-                                <del>Je ne cours pas <i class="fas fa-xmark"></i></del>
-                            </label>
-                            <label>Remarques</label>
-                            <textarea></textarea>
-                        </fieldset>
-                    </td>
-                </tr>
-                <?php endforeach ?>
-            </table>
+                <h4>Courses : </h4>
+                <table role="grid">
+                    <?php foreach ($competitions as $competition): ?>
+                        <tr class="display">
+                            <td class="competition-name"><b>
+                                    <?= $competition['nom'] ?>
+                                </b></td>
+                            <td class="competition-date"><?= format_date($competition['date']) ?></td>
+                            <td class="competition-place">
+                                <?= $competition['lieu'] ?>
+                            </td>
+                        </tr>
+                        <tr class="edit">
+                            <td colspan="4">
+                                <fieldset class="row">
+                                    <label for="competitionSwitch">
+                                        <input type="checkbox" name=<?="course_" . $competition['cid'] ?> id="competitionSwitch"
+                                            class="entry-switch" role="switch" value=<?= $competition['cid'] ?>
+                                            onchange="displayForm()" <?= $competition['present'] ? "checked" : "" ?>>
+                                        <ins>Je cours <i class="fas fa-check"></i></ins>
+                                        <del>Je ne cours pas <i class="fas fa-xmark"></i></del>
+                                    </label>
+                                    <label>Remarques</label>
+                                    <textarea name=<?="compet_comment_" . $competition['cid'] ?>><?= $competition['rmq'] ?></textarea>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </table>
             <?php endif ?>
         </div>
         <p id="conditionalText">Inscris-toi pour une vraie partie de plaisir !</p>
     </article>
+    <button type="submit" name="submit">Enregister</button>
 </form>
 
 <script>
