@@ -1,6 +1,6 @@
 function searchTable(inputId, tableId) {
   // Declare variables
-  var input, filter, table, tr, td, i, j, txtValue;
+  let input, filter, table, tr, td, i, j, txtValue, shouldTraverse;
   input = document.getElementById(inputId);
   filter = input.value.toUpperCase();
   table = document.getElementById(tableId).getElementsByTagName("tbody")[0];
@@ -9,14 +9,16 @@ function searchTable(inputId, tableId) {
   // Loop through all table rows, and hide those who don't match the search query
   for (i = 0; i < tr.length; i++) {
     var tds = tr[i].getElementsByTagName("td");
+    shouldTraverse = true;
     for (j = 0; j < tds.length; j++) {
       td = tds[j];
-      if (td) {
+      if (shouldTraverse && td) {
         txtValue = td.textContent || td.innerText;
         if (txtValue.toUpperCase().indexOf(filter) > -1) {
-          tr[i].style.display = "";
+          tr[i].classList.remove("hidden");
+          shouldTraverse = false;
         } else {
-          tr[i].style.display = "none";
+          tr[i].classList.add("hidden");
         }
       }
     }

@@ -1,6 +1,9 @@
 del {
   text-decoration: none;
 }
+.hidden {
+  display: none;
+}
 header > .row {
   justify-content: center;
   margin-bottom: 2rem;
@@ -18,7 +21,6 @@ header > .row > .col-sm-6 {
   }
 
   table td {
-    display: flex;
     border-bottom: none;
   }
   table .competition-name {
@@ -42,24 +44,21 @@ textarea {
 }
 
 /* Conditional text display */
-.entry-switch:checked ~ del {
+input[role="switch"]:checked ~ del {
   display: none;
 }
-.entry-switch:checked ~ ins {
+input[role="switch"]:checked ~ ins {
   display: inline;
 }
-.entry-switch:not(:checked) ~ del {
+input[role="switch"]:not(:checked) ~ del {
   display: inline;
 }
-.entry-switch:not(:checked) ~ ins {
+input[role="switch"]:not(:checked) ~ ins {
   display: none;
 }
 #conditionalText {
   display: none;
 }
-#conditionalForm.hidden {
-  display: none;
-}
-#conditionalForm.hidden ~ #conditionalText {
+#eventForm.hidden ~ #conditionalText {
   display: block;
 }

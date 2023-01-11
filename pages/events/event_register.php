@@ -4,32 +4,57 @@ restrict_access();
 $id = $_SESSION['user_id'];
 
 require_once "database/events.api.php";
+require_once "utils/form_validation.php";
 $event = get_event_by_id(get_route_param('event_id'), $_SESSION['user_id']);
 $competitions = get_competitions_by_event_id($event['did'], $_SESSION['user_id']);
 
-$competitions_id = [];
+// TODO: Extract to mapper
+$event_mapping = [
+    "event_entry" => $event['present'],
+    "event_transport" => $event['transport'],
+    "event_accomodation" => $event['heberg'],
+    "event_comment" => $event['comment'],
+];
 foreach ($competitions as $competition) {
-    $competitions_id[] = $competition['cid'];
+    $event_mapping["competition[{$competition['cid']}][entry]"] = $competition['present'];
+    $event_mapping["competition[{$competition['cid']}][ranked_up]"] = $competition['surclasse'];
+    $event_mapping["competition[{$competition['cid']}][comment]"] = $competition['rmq'];
 }
 
-save_registration($event['did'], $id, $_POST, $competitions_id);
+$v = validate($event_mapping);
+$event_entry = $v->switch("event_entry")->set_labels("Je participe", "Pas inscrit");
+$transport = $v->switch("event_transport")->label("Transport");
+$accomodation = $v->switch("event_accomodation")->label("Hébergement");
+$event_comment = $v->text("event_comment")->area()->label("Remarques");
+$competition_rows = [];
+foreach ($competitions as $competition) {
+    $competition_rows[$competition['cid']] = $competition;
+    $competition_rows[$competition['cid']]["entry"] = $v->switch("competition[{$competition['cid']}][entry]")->set_labels("Je cours", "Je ne cours pas");
+    $competition_rows[$competition['cid']]["ranked_up"] = $v->switch("competition[{$competition['cid']}][ranked_up]")->label("Surclassé");
+    $competition_rows[$competition['cid']]["comment"] = $v->text("competition[{$competition['cid']}][comment]")->area()->label("Remarques");
+}
 
-$event = get_event_by_id(get_route_param('event_id'), $_SESSION['user_id']);
-$competitions = get_competitions_by_event_id($event['did'], $_SESSION['user_id']);
+if ($v->valid()) {
+    save_registration($event['did'], $id, $v);
+}
 
 page("Inscription - " . $event['nom'], "event_view.css");
 ?>
-<form id="eventForm" method="post">
-    <div class="page-actions">
+<form id="mainForm" method="post">
+    <div id="page-actions">
         <a href="/evenements/<?= $event['did'] ?>" class="secondary"><i class="fas fa-caret-left"></i> Retour</a>
+        <a href="#" onclick="document.getElementById('mainForm').submit()">Enregistrer</a>
     </div>
     <article>
         <header class="center">
+            <?= $v->render_errors() ?>
             <div class="row">
                 <div class="col-sm-6">
                     <?php include "components/start_icon.php" ?>
 
-                    <span><?="Départ - " . format_date($event['depart']) ?></span>
+                    <span>
+                        <?="Départ - " . format_date($event['depart']) ?>
+                    </span>
                 </div>
                 <div class="col-sm-6">
                     <?php include "components/finish_icon.php" ?>
@@ -44,42 +69,28 @@ page("Inscription - " . $event['nom'], "event_view.css");
             </div>
 
             <fieldset>
-                <label for="entrySwitch">
-                    <b>
-                        <input type="checkbox" name="event_entry" id="entrySwitch" class="entry-switch" role="switch"
-                            onchange="displayForm()" <?= $event['present'] ? "checked" : "" ?>>
-                        <ins>Je participe <i class="fas fa-check"></i></ins>
-                        <del>Je ne participe pas <i class="fas fa-xmark"></i></del>
-                    </b>
-                </label>
+                <b><?= $event_entry->render("onchange=\"toggleDisplay(this,'eventForm')\"") ?></b>
             </fieldset>
         </header>
-        <div id="conditionalForm" <?= $event['present'] ? "" : "class='hidden'" ?>>
+
+        <div id="eventForm" <?= $event_entry->value ?: "class='hidden'" ?>>
 
             <fieldset class="row">
-                <label for="transportSwitch" class="col-sm-6">
-                    <input type="checkbox" name="event_transport" id="transportSwitch" role="switch"
-                        <?= $event['present'] && $event['transport'] ? "checked" : "" ?>>
-                    Transport
-                </label>
-                <label for="accomodationSwitch" class="col-sm-6">
-                    <input type="checkbox" name="event_accomodation" id="accomodationSwitch" role="switch"
-                        <?= $event['present'] && $event['heberg'] ? "checked" : "" ?>>
-                    Hébergement
-                </label>
+                <div class="col-sm-6">
+                    <?= $transport->render() ?>
+                </div>
+                <div class="col-sm-6">
+                    <?= $accomodation->render() ?>
+                </div>
             </fieldset>
-
             <fieldset>
-                <label for="entryComments">
-                    Remarques:
-                </label>
-                <textarea name="event_comments"><?= $event['comment'] ?></textarea>
+                <?= $event_comment->render() ?>
             </fieldset>
 
-            <?php if (count($competitions)): ?>
+            <?php if (count($competition_rows)): ?>
                 <h4>Courses : </h4>
                 <table role="grid">
-                    <?php foreach ($competitions as $competition): ?>
+                    <?php foreach ($competition_rows as $competition_id => $competition): ?>
                         <tr class="display">
                             <td class="competition-name"><b>
                                     <?= $competition['nom'] ?>
@@ -90,17 +101,13 @@ page("Inscription - " . $event['nom'], "event_view.css");
                             </td>
                         </tr>
                         <tr class="edit">
-                            <td colspan="4">
+                            <td colspan="3">
                                 <fieldset class="row">
-                                    <label for="competitionSwitch">
-                                        <input type="checkbox" name=<?="course_" . $competition['cid'] ?> id="competitionSwitch"
-                                            class="entry-switch" role="switch" value=<?= $competition['cid'] ?>
-                                            onchange="displayForm()" <?= $competition['present'] ? "checked" : "" ?>>
-                                        <ins>Je cours <i class="fas fa-check"></i></ins>
-                                        <del>Je ne cours pas <i class="fas fa-xmark"></i></del>
-                                    </label>
-                                    <label>Remarques</label>
-                                    <textarea name=<?="compet_comment_" . $competition['cid'] ?>><?= $competition['rmq'] ?></textarea>
+                                    <?= $competition["entry"]->render("onchange=\"toggleDisplay(this,'competitionForm$competition_id')\"") ?>
+                                    <div id="competitionForm<?= $competition_id ?>" <?= $competition['present'] ?: " class=hidden" ?>>
+                                        <?= $competition["ranked_up"]->render() ?>
+                                        <?= $competition["comment"]->render() ?>
+                                    </div>
                                 </fieldset>
                             </td>
                         </tr>
@@ -110,18 +117,16 @@ page("Inscription - " . $event['nom'], "event_view.css");
         </div>
         <p id="conditionalText">Inscris-toi pour une vraie partie de plaisir !</p>
     </article>
-    <button type="submit" name="submit">Enregister</button>
 </form>
 
 <script>
-    const entrySwitch = document.getElementById("entrySwitch");
-    const conditionalForm = document.getElementById("conditionalForm");
 
-    function displayForm() {
-        if (entrySwitch.checked) {
-            conditionalForm.classList.remove("hidden");
+    function toggleDisplay(toggle, target) {
+        const targetElement = document.getElementById(target);
+        if (toggle.checked) {
+            targetElement.classList.remove("hidden");
         } else {
-            conditionalForm.classList.add("hidden");
+            targetElement.classList.add("hidden");
         }
     }
 </script>

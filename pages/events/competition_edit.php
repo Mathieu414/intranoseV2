@@ -19,9 +19,9 @@ if ($competition_id) {
 }
 
 $v = validate($post);
-$name = $v->string("name")->label("Nom de la course")->placeholder()->required();
+$name = $v->text("name")->label("Nom de la course")->placeholder()->required();
 $date = $v->date("date")->label("Date")->required();
-$location = $v->string("location")->label("Lieu")->required();
+$location = $v->text("location")->label("Lieu")->required();
 
 if (!empty($_POST) && $v->valid()) {
     create_or_edit_competition($name->value, $date->value, $location->value, $event_id, $competition_id);
@@ -30,7 +30,7 @@ if (!empty($_POST) && $v->valid()) {
 page($competition_id ? "{$competition["nom"]} : Modifier" : "Ajouter une course");
 ?>
 <form method="post">
-    <div class="page-actions">
+    <div id="page-actions">
         <a href="/evenements/<?= $event_id ?>" class="secondary">
             <i class="fas fa-xmark"></i> Annuler
         </a>

@@ -26,7 +26,11 @@ class Validator
 
     public function __construct(array $post)
     {
-        $this->empty = empty($post);
+        if (empty($_POST)) {
+            $this->empty = true;
+        } else {
+            $post = $_POST;
+        }
         foreach ($post as $key => $value) {
             $this->fields[$key] = new Field($key, $value);
         }
@@ -34,13 +38,16 @@ class Validator
 
     function value(string $key)
     {
-        return clean($this->fields[$key]->value ?? null) ?? null;
+        return $this->fields[$key]->value ?? null;
     }
 
     function valid(string $key = null)
     {
         if ($key) {
             return $this->get_field($key)->valid();
+        }
+        if ($this->empty) {
+            return false;
         }
         return array_reduce($this->fields, function ($valid, Field $field) {
             return $valid && $field->valid();
@@ -76,7 +83,7 @@ class Validator
     }
 
     /** Creates new text field */
-    function string(string $key, string $msg = null): StringField
+    function text(string $key, string $msg = null): StringField
     {
         $this->fields[$key] = new StringField($key, $this->value($key), $this);
         $this->fields[$key]->check($msg);
@@ -87,6 +94,14 @@ class Validator
     function date(string $key, string $msg = null): DateField
     {
         $this->fields[$key] = new DateField($key, $this->value($key), $this);
+        $this->fields[$key]->check($msg);
+        return $this->fields[$key];
+    }
+
+    /** Creates new date field */
+    function switch (string $key, string $msg = null): SwitchField
+    {
+        $this->fields[$key] = new SwitchField($key, $this->value($key), $this);
         $this->fields[$key]->check($msg);
         return $this->fields[$key];
     }
@@ -128,9 +143,7 @@ class Field
      */
     function render(string $attrs = "")
     {
-        return "<label for='" . $this->key . "'>"
-            . $this->label
-            . "<input ${attrs} name=\"$this->key\" id=\"$this->key\" value=\"$this->value\" " . ($this->valid() ? "" : " aria-invalid=true") . "></label>";
+        return "<label for=\"$this->key\">$this->label<input $attrs name=\"$this->key\" id=\"$this->key\" value=\"$this->value\" " . ($this->valid() ? "" : " aria-invalid=true") . "></label>";
     }
 
     /** Adds a validation error */
@@ -177,7 +190,7 @@ class Field
     /** Enables Decorator pattern */
     function string(string $key, string $msg = "")
     {
-        return $this->context?->string($key, $msg) ?? new StringField($key);
+        return $this->context?->text($key, $msg) ?? new StringField($key);
     }
     /** Enables Decorator pattern */
     function date(string $key, string $msg = "")
@@ -267,6 +280,7 @@ class DateField extends Field
 class StringField extends Field
 {
     public ?string $placeholder = "";
+    public bool $is_textarea = false;
 
     /** Defines the placeholder. Call the method without params to use the label as placeholder */
     function placeholder(string $text = null)
@@ -275,18 +289,28 @@ class StringField extends Field
         return $this;
     }
 
+    function area()
+    {
+        $this->is_textarea = true;
+        return $this;
+    }
+
     function check(string $msg = null)
     {
         if (!preg_match('/^[\w\sÀ-ÿ\p{P}-]*$/', $this->value)) {
-            echo $this->value;
             $this->set_error($msg ?? "Format invalide");
         }
     }
 
     function render(string $attrs = "")
     {
-        $placeholder = $this->placeholder ?? $this->label;
-        return parent::render("type = text placeholder=\"$placeholder\"");
+        if ($this->is_textarea) {
+            return "<label for=\"$this->key\">$this->label</label>"
+                . "<textarea name=\"$this->key\" id=\"$this->key\"" . ($this->valid() ? "" : " aria-invalid=true") . ">$this->value</textarea>";
+        } else {
+            $placeholder = $this->placeholder ?? $this->label;
+            return parent::render("type = text placeholder=\"$placeholder\"");
+        }
     }
 
     function max_length(int $count, string $msg = null)
@@ -307,5 +331,45 @@ class StringField extends Field
             $this->set_error($msg ?? "Trop court");
         }
         return $this;
+    }
+}
+
+class SwitchField extends Field
+{
+    public string $true_label = "";
+    public string $false_label = "";
+
+    function check(string $msg = null)
+    {
+        if (!preg_match('/^\d$/', $this->value)) {
+            $this->set_error($msg ?? "Format invalide");
+        }
+    }
+
+    function set_labels(string $true_label, string $false_label)
+    {
+        $this->true_label = $true_label;
+        $this->false_label = $false_label;
+        return $this;
+    }
+
+    function render(string $attrs = "")
+    {
+        return "<label for=\"$this->key\">"
+            . "<input type=checkbox role=switch name=\"$this->key\" id=\"$this->key\" value=1 $attrs " . ($this->valid() ? "" : " aria-invalid=true") . ($this->value ? " checked" : "") . ">"
+            . ($this->true_label && $this->false_label ? 
+                "<ins>$this->true_label <i class=\"fas fa-check\"></i></ins><del>$this->false_label <i class=\"fas fa-xmark\"></i></del>"
+                : $this->label)
+            . "</label>";
+    }
+}
+
+class TextAreaField extends Field
+{
+    function check(string $msg = null)
+    {
+        if (!preg_match('/^[\w\sÀ-ÿ\p{P}-]*$/', $this->value)) {
+            $this->set_error($msg ?? "Format invalide");
+        }
     }
 }

@@ -7,7 +7,7 @@ $profile_picture = (file_exists("images/profile/" . $user['id'] . ".jpg")) ? "/i
 
 page($user['prenom'] . " " . $user['nom'], "user_view.css");
 ?>
-<div class="page-actions">
+<div id="page-actions">
     <a href="/licencies" class="secondary"><i class="fas fa-caret-left"></i> Retour</a>
 </div>
 <article class="grid center">
@@ -17,7 +17,9 @@ page($user['prenom'] . " " . $user['nom'], "user_view.css");
     <table class="infos-table">
         <tr>
             <td>Catégorie</td>
-            <td> <?= $user['category_name'] ?></td>
+            <td>
+                <?= $user['category_name'] ?>
+            </td>
         </tr>
         <tr>
             <td>Email</td>
@@ -25,13 +27,15 @@ page($user['prenom'] . " " . $user['nom'], "user_view.css");
         </tr>
         <tr>
             <td>Adresse</td>
-            <td> <?= join(
-    "<br/>",
-    [
-        $user['adresse1'] . " " . $user['adresse2'],
-        $user['cp'] . " " . $user['ville']
-    ]
-) ?></td>
+            <td>
+                <?= join(
+                    "<br/>",
+                    [
+                        $user['adresse1'] . " " . $user['adresse2'],
+                        $user['cp'] . " " . $user['ville']
+                    ]
+                ) ?>
+            </td>
         </tr>
         <tr>
             <td>Fixe</td>
@@ -39,7 +43,9 @@ page($user['prenom'] . " " . $user['nom'], "user_view.css");
         </tr>
         <tr>
             <td>Portable </td>
-            <td><?= $user['telport'] ?></td>
+            <td>
+                <?= $user['telport'] ?>
+            </td>
         </tr>
         <tr>
             <td>Licence</td>
@@ -47,7 +53,9 @@ page($user['prenom'] . " " . $user['nom'], "user_view.css");
         </tr>
         <tr>
             <td>Sport Ident</td>
-            <td><?= $user['sportident'] ?></td>
+            <td>
+                <?= $user['sportident'] ?>
+            </td>
         </tr>
     </table>
 </article>

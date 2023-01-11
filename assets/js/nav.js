@@ -99,3 +99,22 @@ function toggleNav() {
     x.className = "container-fluid";
   }
 }
+
+window.onscroll = function () {
+  myFunction();
+};
+
+// Get the header
+var header = document.getElementById("page-actions");
+
+// Add the sticky class to the header when you reach its scroll position. Remove "sticky" when you leave the scroll position
+function myFunction() {
+  if (header) {
+    var sticky = header.offsetTop + header.offsetHeight;
+    if (window.pageYOffset > sticky) {
+      header.classList.add("sticky");
+    } else {
+      header.classList.remove("sticky");
+    }
+  }
+}

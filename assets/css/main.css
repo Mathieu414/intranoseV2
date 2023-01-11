@@ -36,6 +36,11 @@
   --switch-checked-background-color: var(--primary);
 }
 
+main.container:has(#page-actions.sticky) {
+  margin-top: 2rem;
+  position: relative;
+}
+
 .center {
   text-align: center;
 }
@@ -99,10 +104,19 @@ button.destructive {
     padding: 7px;
   }
 }
-.page-actions {
+#page-actions {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
+  height: 2rem;
+}
+#page-actions.sticky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background-color: var(--background-color);
+  height: 3.5rem;
 }
 
 /* table hover effect */
@@ -115,6 +129,7 @@ tbody > tr.clickable {
 tbody > tr.clickable::after {
   content: "";
   position: absolute;
+  pointer-events: none;
   z-index: 1;
   top: 0;
   bottom: 0;
